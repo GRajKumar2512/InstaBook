@@ -50,7 +50,7 @@ export async function saveUserToDB(user: {
   }
 }
 
-export async function SignInAccount(user: { email: string; password: string }) {
+export async function signInAccount(user: { email: string; password: string }) {
   try {
     const session = await account.createEmailSession(user.email, user.password);
 
@@ -79,3 +79,15 @@ export async function getCurrentUser() {
     console.log(error);
   }
 }
+
+export async function signOutAccount() {
+  try {
+    const session = await account.deleteSession("current");
+
+    return session;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createPost() {}
