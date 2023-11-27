@@ -28,8 +28,8 @@ type PostFormProps = {
 
 const PostForm = ({ post }: PostFormProps) => {
   const { mutateAsync: createPost, isPending: isLoadingCreate } =
-    useCreatePost();
-  const { user } = useUserContext();
+    useCreatePost(); // appwrite function to create post
+  const { user } = useUserContext(); // to send the user.$id while creating post
   const { toast } = useToast();
   const navigate = useNavigate();
 
