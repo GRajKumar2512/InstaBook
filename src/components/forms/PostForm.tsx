@@ -19,16 +19,23 @@ import { Input } from "../ui/input";
 import { useToast } from "../ui/use-toast";
 
 import { PostValidation } from "@/lib/validation";
-import { useCreatePost } from "@/lib/react-query/queriesAndMutations";
+import {
+  useCreatePost,
+  useUpdatePost,
+} from "@/lib/react-query/queriesAndMutations";
 import { useUserContext } from "@/context/AuthContext";
 
 type PostFormProps = {
   post?: Models.Document;
+  action: "create" | "update";
 };
 
-const PostForm = ({ post }: PostFormProps) => {
+const PostForm = ({ post, action }: PostFormProps) => {
   const { mutateAsync: createPost, isPending: isLoadingCreate } =
     useCreatePost(); // appwrite function to create post
+  const { mutateAsync: updatePost, isPending: isLoadingUpdate } =
+    useUpdatePost(); // appwrite function to update post
+
   const { user } = useUserContext(); // to send the user.$id while creating post
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -46,6 +53,21 @@ const PostForm = ({ post }: PostFormProps) => {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof PostValidation>) {
+    if (post && action === "update") {
+      const updatedPost = await updatePost({
+        ...values,
+        postId: post.$id,
+        imageId: post?.imageId,
+        imageUrl: post?.imageUrl,
+      });
+
+      if (!updatePost) {
+        toast({ title: "Please try again" });
+      }
+
+      return navigate(`/posts/${post.$id}`);
+    }
+
     const newPost = await createPost({
       ...values,
       userId: user.id,
@@ -93,7 +115,7 @@ const PostForm = ({ post }: PostFormProps) => {
               <FormControl>
                 <FileUploader
                   fieldChange={field.onChange}
-                  mediaUrl={post?.imageUrl}
+                  mediaUrl={post?.ImageUrl}
                 />
               </FormControl>
 
@@ -146,8 +168,9 @@ const PostForm = ({ post }: PostFormProps) => {
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
+            disabled={isLoadingCreate || isLoadingUpdate}
           >
-            Submit
+            {action} post
           </Button>
         </div>
       </form>
